@@ -1,14 +1,10 @@
 services:
   - name: "My Pages"
     endpoints:
-      - url: "https://blog.ch3nyang.top"
-      - url: "https://file.ch3nyang.top"
-      - url: "https://til.ch3nyang.top"
-      - url: "https://mind.ch3nyang.top"
+      - url: "https://novel-agent.onrender.com"
   - name: "My Services"
     endpoints:
-      - url: "https://2024.ch3nyang.top/health"
-      - url: "https://2024.ch3nyang.top"
+      - url: ""
 
 notifications:
   enabled: false
