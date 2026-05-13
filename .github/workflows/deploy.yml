@@ -1,80 +1,41 @@
-name: Auto Deploy Report
+name: Deploy to GitHub Pages
 
 on:
   schedule:
-    - cron: '*/10 * * * *'
-  workflow_dispatch:
+    - cron: '*/30 * * * *'   # 每30分钟运行一次
+  workflow_dispatch:          # 允许手动触发
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: "🔄 Checkout code"
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: "🐹 Set up Go"
-        uses: actions/setup-go@v5
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          go-version: '1.24'
+          node-version: '18'
 
-      - name: "🔧 Setup environment variables from secrets"
-        env:
-          SECRETS_CONTEXT: ${{ toJSON(secrets) }}
-        run: |
-          echo "Setting up environment variables from GitHub secrets..."
-          echo "$SECRETS_CONTEXT" | jq -r 'to_entries[] | "\(.key)=\(.value)"' >> $GITHUB_ENV
-          echo "Environment variables configured from secrets"
+      - name: Install dependencies
+        run: npm ci
 
-      - name: "🏗️ Build and run PongHub"
-        run: |
-          mkdir -p bin data
-          git clone --branch gh-pages https://github.com/${{ github.repository }}.git || true
-          if [ -f ponghub/ponghub_log.json ]; then
-            cp ponghub/ponghub_log.json data/ponghub_log.json
-          else
-            echo "New installation, no previous data found."
-          fi
-          make run || true
+      - name: Build
+        run: npm run build
 
-      - name: "📦 Prepare publish directory"
-        run: |
-          mkdir -p publish/static
-          cp -r data/* publish/
-          cp -r static/* publish/static/
-          if [ -f CNAME ]; then
-            cp CNAME publish/
-          else
-            echo "No CNAME file found."
-          fi
-          touch publish/.nojekyll
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
 
-      - name: "🚀 Deploy to GitHub Pages"
-        uses: JamesIves/github-pages-deploy-action@v4
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          folder: publish
-          single-commit: true
-          git-config-name: github-pages-deploy-action
-          git-config-email: noreply@github.com
+          path: './dist'
 
-      - name: "⚠️ Handle Service Notifications"
-        run: |
-          if [ -f data/default_enabled.txt ] && [ -s data/default_enabled.txt ] && [ "$(cat data/default_enabled.txt)" = "true" ]; then
-            if [ -f data/notify.txt ] && [ -s data/notify.txt ]; then
-              echo "Service issues detected:"
-              cat data/notify.txt
-              echo "Default notification enabled, failing workflow."
-              exit 1
-            fi
-          else
-            if [ -f data/notify.txt ] && [ -s data/notify.txt ]; then
-              echo "Service issues detected:"
-              cat data/notify.txt
-              echo "Service issues have been reported through the configured notification channels."
-            else
-              echo "No service issues detected."
-            fi
-          fi
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
