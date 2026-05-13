@@ -1,10 +1,10 @@
 services:
-  - name: "My Pages"
+  - name: "Novel Agent on Render"
     endpoints:
       - url: "https://novel-agent.onrender.com"
-  - name: "My Services"
-    endpoints:
-      - url: ""
-
+      method: "GET"
+      timeout: 30      # Render 冷启动需要时间
+      expect_status: 200
+      
 notifications:
   enabled: false
