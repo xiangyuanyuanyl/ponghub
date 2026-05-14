@@ -2,9 +2,9 @@ services:
   - name: "Novel Agent on Render"
     endpoints:
       - url: "https://novel-agent.onrender.com"
-      method: "GET"
-      timeout: 30      # Render 冷启动需要时间
-      expect_status: 200
-      
+        method: "GET"
+        timeout: 30      # Render 冷启动需要时间
+        expect_status: 200
+
 notifications:
   enabled: false
