@@ -3,7 +3,7 @@ services:
     endpoints:
       - url: "https://novel-agent.onrender.com"
         method: "GET"
-        timeout: 30      # Render 冷启动需要时间
+        timeout: 30
         expect_status: 200
 
 notifications:
